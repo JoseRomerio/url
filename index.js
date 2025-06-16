@@ -36,7 +36,7 @@ async function updateHtmlFile(url) {
     <title>Redirecting...</title>
 </head>
 <body>
-    <p>Redirecionando para a pagina ${url}...</p>
+    <p>Redirecionando para a pagina. ${url}...</p>
 </body>
 </html>`;
 
