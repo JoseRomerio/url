@@ -2,34 +2,44 @@ name: Update Ngrok URL
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Runs every hour
-  workflow_dispatch:      # Allows manual trigger
+    - cron: '0 * * * *'
+  workflow_dispatch:
   push:
-    branches: [ main ]    # Runs on each push to main
+    branches: [ main ]
 
 jobs:
-  update-url:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Adiciona permissão de escrita
+
     steps:
-      - uses: actions/checkout@v3
+    - uses: actions/checkout@v3
+      with:
+        persist-credentials: true  # Garante que as credenciais sejam mantidas
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Create docs directory
+      run: mkdir -p docs
+        
+    - name: Install dependencies
+      run: npm install
       
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          
-      - name: Install dependencies
-        run: npm install
-        
-      - name: Get Ngrok URL and update page
-        env:
-          NGROK_API_KEY: ${{ secrets.NGROK_API_KEY }}
-        run: node index.js
-        
-      - name: Commit and push if changed
-        run: |
-          git config --global user.name 'GitHub Action'
-          git config --global user.email 'action@github.com'
-          git add docs/index.html
-          git commit -m "Update redirect URL" || exit 0
-          git push
+    - name: Run update script
+      env:
+        NGROK_API_KEY: ${{ secrets.NGROK_API_KEY }}
+      run: node index.js
+      
+    - name: Commit and push if changed
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add docs/index.html
+        git commit -m "Update redirect URL" || exit 0
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
